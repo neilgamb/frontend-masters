@@ -57,3 +57,4 @@ getBreeds()
 
 // AJAX = asynchronous javascript + xml
 // API = application program interface
+// JSON = js object notion
