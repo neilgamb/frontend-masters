@@ -1,97 +1,110 @@
-let runningTotal = 0
-let buffer = '0'
-let previousOperator
-const screen = document.querySelector('.screen')
+let displayValue = '0'
+let total = null
+let operation = null
 
-function buttonClick(value) {
-  if (isNaN(parseInt(value))) {
-    handleSymbol(value)
-  } else {
-    handleNumber(value)
-  }
-  rerender()
+const displayEl = document.querySelector('.display')
+const CLEAR = document.querySelector('.clearBtn').innerHTML
+const BACKSPACE = document.querySelector('.backspaceBtn').innerHTML
+const DIVIDE = document.querySelector('.divideBtn').innerHTML
+const MULTIPLY = document.querySelector('.multiplyBtn').innerHTML
+const SUBTRACT = document.querySelector('.subtractBtn').innerHTML
+const ADD = document.querySelector('.addBtn').innerHTML
+const EQUALS = document.querySelector('.equalsBtn').innerHTML
+
+function isNumber(value) {
+  return !isNaN(value)
 }
 
-function handleNumber(value) {
-  if (buffer === '0') {
-    buffer = value
+function handleButtonClick(key) {
+  if (isNumber(key)) {
+    handleNumberClick(key)
   } else {
-    buffer += value
+    handleOperationClick(key)
   }
+
+  updateDisplay()
 }
 
-function handleMath(value) {
-  if (buffer === '0') {
-    // do nothing
-    return
+function handleNumberClick(key) {
+  if (total && operation) {
+    displayValue = '0'
   }
-
-  const intBuffer = parseInt(buffer)
-  if (runningTotal === 0) {
-    runningTotal = intBuffer
+  // console.log(`number clicked: ${key}`)
+  if (displayValue === '0') {
+    displayValue = key
   } else {
-    flushOperation(intBuffer)
-  }
-
-  previousOperator = value
-
-  buffer = '0'
-}
-
-function flushOperation(intBuffer) {
-  if (previousOperator === '+') {
-    runningTotal += intBuffer
-  } else if (previousOperator === '-') {
-    runningTotal -= intBuffer
-  } else if (previousOperator === 'x') {
-    runningTotal *= intBuffer
-  } else {
-    runningTotal /= intBuffer
+    displayValue += key
   }
 }
 
-function handleSymbol(value) {
-  switch (value) {
-    case 'CLEAR':
-      buffer = '0'
-      runningTotal = 0
+function handleOperationClick(key) {
+  // console.log(`operation clicked: ${key}`)
+  switch (key) {
+    case CLEAR:
+      clear()
       break
-    case '=':
-      if (previousOperator === null) {
-        // need two numbers to do math
-        return
-      }
-      flushOperation(parseInt(buffer))
-      previousOperator = null
-      buffer = +runningTotal
-      runningTotal = 0
+    case BACKSPACE:
+      backspace()
       break
-    case '←':
-      if (buffer.length === 1) {
-        buffer = '0'
-      } else {
-        buffer = buffer.substring(0, buffer.length - 1)
-      }
+    case DIVIDE:
+    case MULTIPLY:
+    case SUBTRACT:
+    case ADD:
+      onOperationClick(key)
       break
-    case '+':
-    case '-':
-    case 'x':
-    case '÷':
-      handleMath(value)
+    case EQUALS:
+      compute()
+  }
+}
+
+function compute() {
+  switch (operation) {
+    case ADD:
+      displayValue = (total + displayValue).toString()
+      total = parseInt(displayValue)
+      break
+    case SUBTRACT:
+      displayValue = (total - displayValue).toString()
+      total = parseInt(displayValue)
+      break
+    case MULTIPLY:
+      displayValue = (total * displayValue).toString()
+      total = parseInt(displayValue)
+      break
+    case DIVIDE:
+      displayValue = (total / displayValue).toString()
+      total = parseInt(displayValue)
       break
   }
 }
 
-function rerender() {
-  screen.innerText = buffer
+function onOperationClick(operationClicked) {
+  operation = operationClicked
+  total = parseInt(displayValue)
+}
+
+function clear() {
+  displayValue = '0'
+  total = null
+  operation = null
+}
+
+function backspace() {
+  displayValue = displayValue.slice(0, -1)
+  if (!displayValue) {
+    displayValue = 0
+  }
+}
+
+function updateDisplay() {
+  displayEl.innerHTML = displayValue
+  console.log(displayValue, total)
 }
 
 function init() {
   document
     .querySelector('.buttons')
-    .addEventListener('click', function (event) {
-      buttonClick(event.target.innerText)
-    })
+    .addEventListener('click', (e) => handleButtonClick(e.target.innerText))
 }
 
 init()
