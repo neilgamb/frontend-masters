@@ -1,6 +1,7 @@
 let displayValue = '0'
 let total = null
 let operation = null
+let resetDisplay = false
 
 const displayEl = document.querySelector('.display')
 const CLEAR = document.querySelector('.clearBtn').innerHTML
@@ -26,19 +27,18 @@ function handleButtonClick(key) {
 }
 
 function handleNumberClick(key) {
-  if (total && operation) {
+  if (resetDisplay) {
     displayValue = '0'
   }
-  // console.log(`number clicked: ${key}`)
   if (displayValue === '0') {
     displayValue = key
   } else {
     displayValue += key
   }
+  resetDisplay = false
 }
 
 function handleOperationClick(key) {
-  // console.log(`operation clicked: ${key}`)
   switch (key) {
     case CLEAR:
       clear()
@@ -81,6 +81,7 @@ function compute() {
 function onOperationClick(operationClicked) {
   operation = operationClicked
   total = parseInt(displayValue)
+  resetDisplay = true
 }
 
 function clear() {
@@ -97,8 +98,7 @@ function backspace() {
 }
 
 function updateDisplay() {
-  displayEl.innerHTML = displayValue
-  console.log(displayValue, total)
+  displayEl.innerHTML = displayValue.slice(0, 10)
 }
 
 function init() {

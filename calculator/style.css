@@ -16,8 +16,8 @@ body {
   width: 500px;
   font-size: 75px;
   font-family: 'Courier New', Courier, monospace;
-  border-radius: 20px;
-  overflow: hidden;
+  background-color: black;
+  border: 3px solid black;
 }
 
 .display {
