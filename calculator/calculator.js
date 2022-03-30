@@ -1,91 +1,97 @@
-let result = null
-let operator = null
-let firstValue = '0'
-let secondValue = '0'
-const screenEl = document.querySelector('.screen')
+let runningTotal = 0
+let buffer = '0'
+let previousOperator
+const screen = document.querySelector('.screen')
 
-function isNumber(key) {
-  return !isNaN(key)
-}
-
-function handleButtonClick(key) {
-  if (isNumber(key)) {
-    handleNumber(key)
+function buttonClick(value) {
+  if (isNaN(parseInt(value))) {
+    handleSymbol(value)
   } else {
-    handleOperator(key)
+    handleNumber(value)
   }
-
-  updatefirstValue()
+  rerender()
 }
 
-function handleNumber(key) {
-  if (firstValue === '0') {
-    firstValue = key
-  } else if (firstValue && operator) {
-    secondValue = key
+function handleNumber(value) {
+  if (buffer === '0') {
+    buffer = value
   } else {
-    firstValue += key
+    buffer += value
   }
 }
 
-function handleOperator(key) {
-  switch (key) {
+function handleMath(value) {
+  if (buffer === '0') {
+    // do nothing
+    return
+  }
+
+  const intBuffer = parseInt(buffer)
+  if (runningTotal === 0) {
+    runningTotal = intBuffer
+  } else {
+    flushOperation(intBuffer)
+  }
+
+  previousOperator = value
+
+  buffer = '0'
+}
+
+function flushOperation(intBuffer) {
+  if (previousOperator === '+') {
+    runningTotal += intBuffer
+  } else if (previousOperator === '-') {
+    runningTotal -= intBuffer
+  } else if (previousOperator === 'x') {
+    runningTotal *= intBuffer
+  } else {
+    runningTotal /= intBuffer
+  }
+}
+
+function handleSymbol(value) {
+  switch (value) {
     case 'CLEAR':
-      firstValue = '0'
-      secondValue = '0'
-      operator = null
-      result = null
-      break
-    case '←':
-      firstValue = firstValue.slice(0, -1)
-      if (firstValue === '') {
-        firstValue = '0'
-      }
-      break
-    case '÷':
-    case 'x':
-    case '-':
-    case '+':
-      operator = key
+      buffer = '0'
+      runningTotal = 0
       break
     case '=':
-      calculate()
-  }
-}
-
-function calculate() {
-  switch (operator) {
-    case '÷':
-      result = parseFloat(firstValue) / parseFloat(secondValue)
+      if (previousOperator === null) {
+        // need two numbers to do math
+        return
+      }
+      flushOperation(parseInt(buffer))
+      previousOperator = null
+      buffer = +runningTotal
+      runningTotal = 0
       break
-    case 'x':
-      result = parseFloat(firstValue) * parseFloat(secondValue)
-      break
-    case '-':
-      result = parseFloat(firstValue) - parseFloat(secondValue)
+    case '←':
+      if (buffer.length === 1) {
+        buffer = '0'
+      } else {
+        buffer = buffer.substring(0, buffer.length - 1)
+      }
       break
     case '+':
-      result = parseFloat(firstValue) + parseFloat(secondValue)
+    case '-':
+    case 'x':
+    case '÷':
+      handleMath(value)
       break
   }
-
-  firstValue = result
 }
 
-function updatefirstValue() {
-  if (result) {
-    screenEl.innerText = result
-  } else if (firstValue && operator) {
-    screenEl.innerText = secondValue
-  } else {
-    screenEl.innerText = firstValue
-  }
+function rerender() {
+  screen.innerText = buffer
 }
 
 function init() {
-  document.querySelector('.calculator').addEventListener('click', function (e) {
-    handleButtonClick(e.target.innerText)
-  })
+  document
+    .querySelector('.buttons')
+    .addEventListener('click', function (event) {
+      buttonClick(event.target.innerText)
+    })
 }
 
-document.addEventListener('DOMContentLoaded', init)
+init()
